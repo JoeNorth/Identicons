@@ -1,10 +1,10 @@
 defmodule Identicons do
   alias Identicons.Image
 
-  def create(input) do
+  def create(input, rgb \\ nil) do
     input
     |> hash
-    |> get_colors
+    |> get_colors(rgb)
     |> create_grid
     |> get_even_cells
     |> create_image_map
@@ -13,12 +13,18 @@ defmodule Identicons do
   end
 
   def hash(input) do
-    :crypto.hash(:md5, input)
+    hash = :crypto.hash(:md5, input)
     |> :binary.bin_to_list
+
+    %Image{grid: hash}
   end
 
-  def get_colors([r,g,b|_tail] = hash) do
-    %Image{rgb: {r,g,b}, grid: hash}
+  def get_colors(%Image{grid: [r,g,b | _tail]} = image, nil) do
+    %Image{image | rgb: {r,g,b}}
+  end
+
+  def get_colors(%Image{grid: _grid} = image, rgb) do
+    %Image{image | rgb: rgb}
   end
 
   def create_grid(%Image{grid: grid} = image) do
@@ -70,5 +76,5 @@ defmodule Identicons do
 
   def save_image(image, name) do
     File.write("#{name}.png", image)
- end
+  end
 end
